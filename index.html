@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Data Visualization</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+    <h1>Data Visualization</h1>
+
+    <!-- 사용자 입력 -->
+    <label for="dataInput">Enter comma-separated values:</label>
+    <input type="text" id="dataInput" placeholder="10, 20, 30, 40, 50">
+    <button onclick="drawChart()">Visualize</button>
+
+    <!-- 캔버스 영역 (Chart.js가 그래프를 그릴 곳) -->
+    <canvas id="myChart" width="400" height="200"></canvas>
+
+    <script>
+        function drawChart() {
+            // 입력값 가져오기
+            const inputData = document.getElementById('dataInput').value.split(',').map(Number);
+
+            // Chart.js로 그래프 생성
+            const ctx = document.getElementById('myChart').getContext('2d');
+            new Chart(ctx, {
+                type: 'bar',  // 그래프 타입: 'bar', 'line', 'pie' 등
+                data: {
+                    labels: inputData.map((_, i) => `Label ${i + 1}`),  // 레이블
+                    datasets: [{
+                        label: 'User Data',
+                        data: inputData,
+                        backgroundColor: 'rgba(75, 192, 192, 0.2)',
+                        borderColor: 'rgba(75, 192, 192, 1)',
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    scales: {
+                        y: { beginAtZero: true }
+                    }
+                }
+            });
+        }
+    </script>
+</body>
+</html>
