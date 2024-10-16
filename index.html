@@ -23,7 +23,7 @@
             padding: 20px;
             border-radius: 10px;
             box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-            max-width: 600px;
+            max-width: 800px;
             width: 100%;
             text-align: center;
         }
@@ -61,75 +61,243 @@
             background-color: #45a049;
         }
 
-        /* 그래프 캔버스 설정 */
-        canvas {
-            margin-top: 20px;
+        /* 모달 창 스타일 */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.7);
+            overflow: auto;
+            padding-top: 60px;
+        }
+
+        .modal-content {
+            background-color: white;
+            margin: auto;
+            padding: 20px;
+            border: 1px solid #888;
+            width: 80%;
+            max-width: 700px;
+        }
+
+        .close {
+            color: #aaa;
+            float: right;
+            font-size: 28px;
+            font-weight: bold;
+        }
+
+        .close:hover,
+        .close:focus {
+            color: black;
+            text-decoration: none;
+            cursor: pointer;
+        }
+
+        /* 토글 버튼 스타일 */
+        .toggle-container {
+            display: flex;
+            justify-content: center;
+            margin-bottom: 20px;
+        }
+
+        .toggle-button {
+            padding: 10px 20px;
+            border: none;
+            background-color: #95a5a6;  /* 기본 색상 */
+            color: white;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 0 10px;
+            transition: background-color 0.3s ease; /* 부드러운 전환 효과 추가 */
+        }
+
+        .toggle-button:hover {
+            background-color: #7f8c8d; /* 호버 상태에서 더 어두운 회색 */
+        }
+
+        .toggle-button.active {
+            background-color: #007bff; /* 활성화된 버튼 색상 */
+        }
+
+        .toggle-button.active:hover {
+            background-color: #0056b3; /* 활성화된 버튼 호버 상태에서 더 어두운 파란색 */
         }
     </style>
 </head>
 <body>
     <div class="container">
-        <h1>Data Visualization</h1>
-
-        <!-- 설명 텍스트 영역 -->
-        <p>This simple tool allows you to visualize data by entering comma-separated values. Once entered, a bar chart will be generated to represent your data. You can reset the input and chart anytime using the reset button.</p>
-
-        <!-- 사용자 입력 -->
-        <label for="dataInput">Enter comma-separated values:</label>
-        <input type="text" id="dataInput" placeholder="10, 20, 30, 40, 50">
-        <div>
-            <button onclick="drawChart()">Visualize</button>
-            <button onclick="resetChart()">Reset</button> <!-- 리셋 버튼 추가 -->
+        <!-- 언어 토글 버튼 추가 -->
+        <div class="toggle-container">
+            <button class="toggle-button active" id="toggle-en" onclick="toggleLanguage('en')">English</button>
+            <button class="toggle-button" id="toggle-ko" onclick="toggleLanguage('ko')">한글</button>
         </div>
 
-        <!-- 캔버스 영역 (Chart.js가 그래프를 그릴 곳) -->
-        <canvas id="myChart" width="400" height="200"></canvas>
+        <h1 id="page-title">User Data Visualization</h1>
+
+        <!-- 설명 텍스트 영역 -->
+        <p id="description">This tool allows you to visualize data by entering comma-separated values. You can choose to display the data as a bar chart, line chart, pie chart, radar chart, doughnut chart, or scatter chart. You can reset the input and charts anytime using the reset button.</p>
+
+        <!-- 사용자 입력 -->
+        <label for="dataInput" id="input-label">Enter comma-separated values:</label>
+        <input type="text" id="dataInput" placeholder="10, 20, 30, 40, 50">
+        <div>
+            <button onclick="openModal('bar')">Bar Chart</button>
+            <button onclick="openModal('line')">Line Chart</button>
+            <button onclick="openModal('pie')">Pie Chart</button>
+            <button onclick="openModal('radar')">Radar Chart</button>
+            <button onclick="openModal('doughnut')">Doughnut Chart</button>
+            <button onclick="openModal('scatter')">Scatter Chart</button>
+            <button onclick="resetCharts()">Reset</button>
+        </div>
+    </div>
+
+    <!-- 모달 창 구조 -->
+    <div id="chartModal" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="closeModal()">&times;</span>
+            <canvas id="chartCanvas" width="400" height="200"></canvas>
+        </div>
     </div>
 
     <script>
         let chartInstance = null;
+        let currentLanguage = 'en';
 
-        function drawChart() {
-            // 입력값 가져오기
-            const inputData = document.getElementById('dataInput').value.split(',').map(Number);
+        // 모달 관련
+        const modal = document.getElementById('chartModal');
+        const chartCanvas = document.getElementById('chartCanvas').getContext('2d');
 
-            // 기존 차트가 있으면 파괴
-            if (chartInstance) {
-                chartInstance.destroy();
-            }
-
-            // Chart.js로 그래프 생성
-            const ctx = document.getElementById('myChart').getContext('2d');
-            chartInstance = new Chart(ctx, {
-                type: 'bar',  // 그래프 타입: 'bar', 'line', 'pie' 등
-                data: {
-                    labels: inputData.map((_, i) => `Label ${i + 1}`),  // 레이블
-                    datasets: [{
-                        label: 'User Data',
-                        data: inputData,
-                        backgroundColor: 'rgba(75, 192, 192, 0.2)',
-                        borderColor: 'rgba(75, 192, 192, 1)',
-                        borderWidth: 1
-                    }]
-                },
-                options: {
-                    scales: {
-                        y: { beginAtZero: true }
-                    }
-                }
-            });
+        function openModal(type) {
+            modal.style.display = "block";
+            drawChart(type);
         }
 
-        function resetChart() {
-            // 입력창 초기화
-            document.getElementById('dataInput').value = '';
-
-            // 차트가 있으면 파괴
+        function closeModal() {
+            modal.style.display = "none";
             if (chartInstance) {
                 chartInstance.destroy();
                 chartInstance = null;
             }
         }
+
+        function drawChart(type) {
+            const inputData = document.getElementById('dataInput').value.split(',').map(Number);
+
+            if (chartInstance) {
+                chartInstance.destroy();
+            }
+
+            const labels = inputData.map((_, i) => `Label ${i + 1}`);
+            const dataset = {
+                labels: labels,
+                datasets: [{
+                    label: 'User Data',
+                    data: inputData,
+                    backgroundColor: getChartColors(type),
+                    borderColor: 'rgba(75, 192, 192, 1)',
+                    borderWidth: 1
+                }]
+            };
+
+            const options = {
+                scales: {
+                    y: { beginAtZero: true }
+                }
+            };
+
+            if (type === 'bar') {
+                chartInstance = new Chart(chartCanvas, {
+                    type: 'bar',
+                    data: dataset,
+                    options: options
+                });
+            } else if (type === 'line') {
+                chartInstance = new Chart(chartCanvas, {
+                    type: 'line',
+                    data: dataset,
+                    options: options
+                });
+            } else if (type === 'pie') {
+                chartInstance = new Chart(chartCanvas, {
+                    type: 'pie',
+                    data: dataset
+                });
+            } else if (type === 'radar') {
+                chartInstance = new Chart(chartCanvas, {
+                    type: 'radar',
+                    data: dataset
+                });
+            } else if (type === 'doughnut') {
+                chartInstance = new Chart(chartCanvas, {
+                    type: 'doughnut',
+                    data: dataset
+                });
+            } else if (type === 'scatter') {
+                const scatterData = inputData.map((value, i) => ({ x: i + 1, y: value }));
+                chartInstance = new Chart(chartCanvas, {
+                    type: 'scatter',
+                    data: {
+                        labels: labels,
+                        datasets: [{
+                            label: 'User Data',
+                            data: scatterData,
+                            backgroundColor: 'rgba(75, 192, 192, 1)',
+                            borderColor: 'rgba(75, 192, 192, 1)',
+                            borderWidth: 1
+                        }]
+                    }
+                });
+            }
+        }
+
+        function getChartColors(type) {
+            if (type === 'pie' || type === 'doughnut') {
+                return ['#FF6384', '#36A2EB', '#FFCE56', '#FF5733', '#C70039'];
+            }
+            return 'rgba(75, 192, 192, 0.2)';
+        }
+
+        function resetCharts() {
+            document.getElementById('dataInput').value = '';
+            if (chartInstance) {
+                chartInstance.destroy();
+                chartInstance = null;
+            }
+        }
+
+        // 언어 토글 함수
+        function toggleLanguage(language) {
+            currentLanguage = language;
+            updateLanguage();
+        }
+
+        function updateLanguage() {
+            const title = document.getElementById('page-title');
+            const description = document.getElementById('description');
+            const inputLabel = document.getElementById('input-label');
+
+            if (currentLanguage === 'ko') {
+                title.textContent = "사용자 데이터 시각화";
+                description.textContent = "이 도구는 쉼표로 구분된 값을 입력하여 데이터를 시각화할 수 있습니다. 데이터를 막대 차트, 선 차트, 파이 차트, 레이더 차트, 도넛 차트 또는 산점도로 표시할 수 있으며, 언제든지 입력과 차트를 리셋할 수 있습니다.";
+                inputLabel.textContent = "쉼표로 구분된 값을 입력하세요:";
+            } else {
+                title.textContent = "User Data Visualization";
+                description.textContent = "This tool allows you to visualize data by entering comma-separated values. You can choose to display the data as a bar chart, line chart, pie chart, radar chart, doughnut chart, or scatter chart. You can reset the input and charts anytime using the reset button.";
+                inputLabel.textContent = "Enter comma-separated values:";
+            }
+
+            // 토글 버튼 스타일 업데이트
+            document.getElementById('toggle-en').classList.toggle('active', currentLanguage === 'en');
+            document.getElementById('toggle-ko').classList.toggle('active', currentLanguage === 'ko');
+        }
+
+        // 초기 언어 설정
+        updateLanguage();
     </script>
 </body>
 </html>
