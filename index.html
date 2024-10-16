@@ -5,26 +5,102 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Data Visualization</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        /* 전체 화면을 중앙 정렬하고 여백 추가 */
+        body {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            background-color: #f4f4f4;
+            margin: 0;
+            font-family: Arial, sans-serif;
+        }
+
+        /* 중앙에 표시할 컨테이너 설정 */
+        .container {
+            background-color: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            max-width: 600px;
+            width: 100%;
+            text-align: center;
+        }
+
+        h1 {
+            margin-bottom: 20px;
+            color: #333;
+        }
+
+        p {
+            margin-bottom: 20px;
+            color: #555;
+        }
+
+        /* 입력 필드와 버튼 스타일 */
+        input {
+            padding: 10px;
+            width: 80%;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            margin-bottom: 10px;
+        }
+
+        button {
+            padding: 10px 20px;
+            border: none;
+            background-color: #4caf50;
+            color: white;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 10px;
+        }
+
+        button:hover {
+            background-color: #45a049;
+        }
+
+        /* 그래프 캔버스 설정 */
+        canvas {
+            margin-top: 20px;
+        }
+    </style>
 </head>
 <body>
-    <h1>Data Visualization</h1>
+    <div class="container">
+        <h1>Data Visualization</h1>
 
-    <!-- 사용자 입력 -->
-    <label for="dataInput">Enter comma-separated values:</label>
-    <input type="text" id="dataInput" placeholder="10, 20, 30, 40, 50">
-    <button onclick="drawChart()">Visualize</button>
+        <!-- 설명 텍스트 영역 -->
+        <p>This simple tool allows you to visualize data by entering comma-separated values. Once entered, a bar chart will be generated to represent your data. You can reset the input and chart anytime using the reset button.</p>
 
-    <!-- 캔버스 영역 (Chart.js가 그래프를 그릴 곳) -->
-    <canvas id="myChart" width="400" height="200"></canvas>
+        <!-- 사용자 입력 -->
+        <label for="dataInput">Enter comma-separated values:</label>
+        <input type="text" id="dataInput" placeholder="10, 20, 30, 40, 50">
+        <div>
+            <button onclick="drawChart()">Visualize</button>
+            <button onclick="resetChart()">Reset</button> <!-- 리셋 버튼 추가 -->
+        </div>
+
+        <!-- 캔버스 영역 (Chart.js가 그래프를 그릴 곳) -->
+        <canvas id="myChart" width="400" height="200"></canvas>
+    </div>
 
     <script>
+        let chartInstance = null;
+
         function drawChart() {
             // 입력값 가져오기
             const inputData = document.getElementById('dataInput').value.split(',').map(Number);
 
+            // 기존 차트가 있으면 파괴
+            if (chartInstance) {
+                chartInstance.destroy();
+            }
+
             // Chart.js로 그래프 생성
             const ctx = document.getElementById('myChart').getContext('2d');
-            new Chart(ctx, {
+            chartInstance = new Chart(ctx, {
                 type: 'bar',  // 그래프 타입: 'bar', 'line', 'pie' 등
                 data: {
                     labels: inputData.map((_, i) => `Label ${i + 1}`),  // 레이블
@@ -42,6 +118,17 @@
                     }
                 }
             });
+        }
+
+        function resetChart() {
+            // 입력창 초기화
+            document.getElementById('dataInput').value = '';
+
+            // 차트가 있으면 파괴
+            if (chartInstance) {
+                chartInstance.destroy();
+                chartInstance = null;
+            }
         }
     </script>
 </body>
