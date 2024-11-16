@@ -4,6 +4,8 @@
 
 웹페이지: [Input Data Visualizer](https://rakaso598.github.io/input-data-visualizer/)
 
+---
+
 **주요 기능:**
 - **CSV 데이터 시각화**: 입력된 CSV 데이터를 차트로 변환하여 시각적으로 표현합니다.
 - **인터랙티브 도구**: 사용자가 시각화된 데이터를 탐색하고 분석할 수 있습니다.
